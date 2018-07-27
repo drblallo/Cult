@@ -1,0 +1,5 @@
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+file (GLOB SOURCES "include/*.hpp" "src/*.cpp")
+add_executable(runTest ${SOURCES})
+target_link_libraries(runTest gtest gtest_main)
+TARGET_INCLUDE_DIRECTORIES(runTest PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
