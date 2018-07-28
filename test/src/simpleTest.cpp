@@ -3,7 +3,6 @@
 //
 #include <gtest/gtest.h>
 
-TEST (Generic, IsRunning)
-{
-	EXPECT_TRUE(true);
+TEST(Generic, IsRunning) {
+  EXPECT_TRUE(true);
 }
