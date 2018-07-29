@@ -7,14 +7,17 @@ add_subdirectory(game)
 add_subdirectory(g3log)
 add_subdirectory(glfw)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if (MSVC)
-    add_compile_options(/W3 /WX)
-else()
-    add_compile_options(-W -Wall -Werror)
-endif()
-
-add_executable(Cult main.cpp)
-TARGET_LINK_LIBRARIES(Cult PRIVATE g3logger)
+ADD_EXECUTABLE(Cult main.cpp)
+TARGET_LINK_LIBRARIES(Cult PRIVATE g3logger LIB_ENGINE debug gcov)
+TARGET_COMPILE_FEATURES(Cult PUBLIC cxx_std_14)
+TARGET_COMPILE_OPTIONS(
+        runTest PRIVATE
+        "$<$<CONFIG:DEBUG>:--coverage>"
+        "$<$<CONFIG:DEBUG>:-W>"
+        "$<$<CONFIG:DEBUG>:-Wall>"
+        "$<$<CONFIG:DEBUG>:-g>"
+        "$<$<CONFIG:DEBUG>:-O0>"
+        "$<$<CONFIG:DEBUG>:-fno-inline>"
+        "$<$<CONFIG:DEBUG>:-fno-inline-small-functions>"
+        "$<$<CONFIG:DEBUG>:-fno-default-inline>"
+)
