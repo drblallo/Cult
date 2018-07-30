@@ -6,6 +6,7 @@
 #define CULT_CONSUMERTHREAD_HPP
 
 #include "SafeQueue.hpp"
+
 namespace utils {
 
   class ConsumerThread {

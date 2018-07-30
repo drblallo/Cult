@@ -1,5 +1,5 @@
 #!/bin/bash
-cd cmake-build-debug/
+cd cmake-build-coverage/
 rm test.info
 rm filtered.info
 rm base.info

@@ -17,16 +17,20 @@ template<typename T>
 
    public:
     SafeQueue() : queue(), mutex() {}
+
+    /***
+     *  Copy constructor is not thread safe
+     */
     SafeQueue(const SafeQueue& other) : queue(), mutex() {
-      std::lock_guard<std::mutex> g(other.mutex);
       queue = other.queue;
     }
 
+    /***
+     * Move constructor is not thread safe
+     */
     SafeQueue(SafeQueue&& other) noexcept : queue(std::move(other.queue)), mutex() {}
 
     SafeQueue& operator=(const SafeQueue& other) {
-      std::lock_guard<std::mutex> g1(mutex);
-      std::lock_guard<std::mutex> g2(other.mutex);
       queue = other.queue;
       return *this;
     }
