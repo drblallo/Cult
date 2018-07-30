@@ -8,9 +8,11 @@
 namespace utils {
 
   ConsumerThread::ConsumerThread() :
-      started(false), running(false) {}
+      started(false), running(false), ended(false) {}
 
-  ConsumerThread::~ConsumerThread() {}
+  ConsumerThread::~ConsumerThread() {
+      stop();
+  }
 
   void ConsumerThread::start(bool detachThread) {
     if (wasStarted()) {
@@ -34,6 +36,8 @@ namespace utils {
       return;
     }
     running = false;
+    while (!hasEnded())
+      std::this_thread::sleep_for(std::chrono::nanoseconds(10));
   }
 
   void ConsumerThread::run() {
@@ -42,6 +46,7 @@ namespace utils {
       std::this_thread::sleep_for(std::chrono::nanoseconds(10));
     }
     onStop();
+    ended = true;
   }
 
   void ConsumerThread::processAll() {

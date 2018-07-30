@@ -32,6 +32,7 @@ MACRO(debug_compile_options target)
                 "$<$<CONFIG:DEBUG>:-fno-inline>"
                 "$<$<CONFIG:DEBUG>:-fno-inline-small-functions>"
                 "$<$<CONFIG:DEBUG>:-fno-default-inline>"
+                "$<$<CONFIG:DEBUG>:-fno-elide-constructors>"
         )
         TARGET_LINK_LIBRARIES(${target} PRIVATE debug gcov)
     endif()

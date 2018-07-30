@@ -21,12 +21,14 @@ namespace utils {
     void stop();
     bool isRunning() const {return running;}
     bool wasStarted() const {return started;}
+    bool hasEnded() const {return ended;}
 
    private:
     void run();
     void processAll();
     bool started;
     bool running;
+    bool ended;
     SafeQueue<std::function<void()> > actionQueue;
 
    protected:
