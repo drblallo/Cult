@@ -28,6 +28,7 @@ namespace GEngine {
     GLFWwindow* window;
     static std::function<void(int key, int scanCode, int action, int mods)> inputCallback;
     static void underlyingCallback(GLFWwindow* window, int key, int scanCode, int action, int mods);
+    void nextFrame();
   };
 }
 

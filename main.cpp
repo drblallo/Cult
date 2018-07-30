@@ -16,10 +16,10 @@ int main(int, char** argv) {
 
   LOG(INFO) << "Starting Cult" << std::endl;
 
-  GEngine::Engine::getEngine().init();
   GEngine::Engine::getEngine().start();
 
-  GEngine::Engine::getEngine().terminate();
+  while (GEngine::Engine::getEngine().isRunning())
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
   return 0;
 }

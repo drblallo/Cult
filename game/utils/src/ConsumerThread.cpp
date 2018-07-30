@@ -8,51 +8,68 @@
 namespace utils {
 
   ConsumerThread::ConsumerThread() :
-      started(false), running(false), ended(false) {}
+    keepAlive(false),
+    keepAliveMySelft(false),
+    running(false),
+    startCanReturn(false),
+    mutex()
+    {}
 
   ConsumerThread::~ConsumerThread() {
-      stop();
+    stop();
   }
 
-  void ConsumerThread::start(bool detachThread) {
-    if (wasStarted()) {
+  void ConsumerThread::start() {
+    std::lock_guard<std::mutex> g(mutex);
+
+    bool expected(false);
+    if (!keepAlive.compare_exchange_weak(expected, true)) {
       LOG(WARNING) << "Thread was already started" << std::endl;
       return;
     }
-    if (detachThread) {
-      started = true;
-      running = true;
 
-      std::thread thread(std::bind(&ConsumerThread::run, this));
-      thread.detach();
-    } else {
-      processAll();
-    }
+    startCanReturn.store(false);
+
+    std::thread thread(std::bind(&ConsumerThread::run, this));
+    thread.detach();
+    while (!startCanReturn.load())
+      std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  }
+
+  void ConsumerThread::terminateNow() {
+    keepAliveMySelft.store(false);
   }
 
   void ConsumerThread::stop() {
-    if (!isRunning()) {
-      LOG(WARNING) << "Trying to stop a already stopped thread" << std::endl;
+    std::lock_guard<std::mutex> g(mutex);
+    bool expected(true);
+    if (!keepAlive.compare_exchange_weak(expected, false)) {
+      LOG(WARNING) << "Thread was already stopped" << std::endl;
       return;
     }
-    running = false;
-    while (!hasEnded())
+
+    while (running.load())
       std::this_thread::sleep_for(std::chrono::nanoseconds(10));
   }
 
   void ConsumerThread::run() {
-    while (running) {
+    keepAliveMySelft.store(true);
+    running.store(true);
+    startCanReturn.store(true);
+    onStart();
+    while (keepAlive.load() && keepAliveMySelft.load()) {
       processAll();
       std::this_thread::sleep_for(std::chrono::nanoseconds(10));
     }
     onStop();
-    ended = true;
+
+    keepAlive.store(false);
+    running.store(false);
   }
 
   void ConsumerThread::processAll() {
-    while (!actionQueue.empty()) {
+    while (!actionQueue.empty() && keepAlive.load() && keepAliveMySelft.load())
       actionQueue.poll()();
-    }
   }
 
 }  // namespace utils
