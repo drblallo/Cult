@@ -35,7 +35,7 @@ TEST_F(EngineTest, engineShouldStart) {
   EXPECT_EQ(Engine::getEngine().isRunning(), true);
 }
 
-TEST_F(EngineTest, engineShouldRestart) {
+TEST_F(EngineTest, engineAndEnvironementShouldRestart) {
   Engine::getEngine().stop();
 
   int a = 0;
@@ -43,6 +43,8 @@ TEST_F(EngineTest, engineShouldRestart) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
   EXPECT_EQ(Engine::getEngine().isRunning(), false);
+
+  Engine::terminate();
 
   Engine::getEngine().start();
   a = 0;

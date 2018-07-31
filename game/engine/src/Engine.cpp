@@ -10,11 +10,23 @@
 namespace GEngine {
 
   Engine Engine::engine;
-  bool Engine::initialized(false);
+  std::atomic<bool> Engine::initialized;
+  std::mutex Engine::initLock;
 
-  Engine::Engine() : window(nullptr) {}
+  Engine::Engine() :
+    window(nullptr),
+    thread([this]() {onStart();}, [this] {onStop();}) {}
+  Engine::~Engine() {thread.blockingStop();}
+
+  Engine& Engine::getEngine() {
+    return engine;
+  }
 
   void Engine::init() {
+    std::lock_guard<std::mutex> g(initLock);
+    if (initialized.load())
+      return;
+
     LOG(INFO) << "Starting Engine" << std::endl;
 
     if (!glfwInit()) {
@@ -25,12 +37,16 @@ namespace GEngine {
     glfwSetErrorCallback(logError);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-    initialized = true;
+    initialized.store(true);
   }
 
-  Engine& Engine::getEngine() {
-    return engine;
+  void Engine::terminate() {
+    std::lock_guard<std::mutex> g(initLock);
+    if (!initialized.load())
+      return;
+
+    initialized.store(false);
+    glfwTerminate();
   }
 
   void Engine::update() {
@@ -38,36 +54,38 @@ namespace GEngine {
     glfwPollEvents();
 
     if (window->shouldClose())
-      terminateNow();
+      stop();
     else
-      runLater([this]() { update(); });
+      thread.runLater([this]() { update(); });
   }
 
   void Engine::onStop() {
-    LOG(INFO) << "Closing Stopping Engine" << std::endl;
+    thread.stop();
+    LOG(INFO) << "Tearing down Engine" << std::endl;
+
     window.reset(nullptr);
-    terminate();
+  }
+
+  void Engine::start() {
+     thread.start();
+  }
+
+  void Engine::stop() {
+    thread.stop();
   }
 
   void Engine::onStart() {
-    if (!initialized)
-      init();
 
+    init();
     window = std::make_unique<Window>(Window(640, 480, "Main Window"));
 
     Window::setInputCallback(
         [this](int a, int b, int c, int d){inputCallback(a, b, c, d);});
+
     window->makeCurrentContext();
     glfwSwapInterval(1);
 
-    runLater([this]() { update(); });
-  }
-
-  void Engine::terminate() {
-    LOG(INFO) << "Tearing down Engine" << std::endl;
-
-    glfwTerminate();
-    initialized = false;
+    thread.runLater([this]() { update(); });
   }
 
   void Engine::logError(int, const char *description) {

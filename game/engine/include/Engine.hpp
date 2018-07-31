@@ -13,24 +13,29 @@ class GLFWwindow;
 namespace GEngine {
 class Window;
 
-class Engine : public utils::ConsumerThread {
+class Engine {
 
  public:
   Engine();
+  ~Engine();
   static Engine& getEngine();
-
- protected:
-  virtual void onStart();
-  virtual void onStop();
-
- private:
-  std::unique_ptr<Window> window;
-  static bool initialized;
-
   static void init();
   static void terminate();
 
+  void start();
+  void stop();
+  bool isRunning() const {return thread.isRunning();}
+
+ private:
+  std::unique_ptr<Window> window;
+  utils::ConsumerThread thread;
+
+  static std::atomic<bool> initialized;
+  static std::mutex initLock;
+
   void update();
+  void onStart();
+  void onStop();
 
   static void logError(int error, const char* description);
   static Engine engine;

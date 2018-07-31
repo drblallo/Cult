@@ -19,6 +19,8 @@ MACRO(debug_compile_options target)
             TARGET_LINK_LIBRARIES(${target} PRIVATE debug asan)
         elseif(${ASAN} MATCHES "thread")
             TARGET_LINK_LIBRARIES(${target} PRIVATE debug tsan)
+        elseif(${ASAN} MATCHES "undefined")
+            TARGET_LINK_LIBRARIES(${target} PRIVATE debug ubsan)
         endif()
     endif()
 

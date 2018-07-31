@@ -8,67 +8,81 @@
 namespace utils {
 
   ConsumerThread::ConsumerThread() :
-    keepAlive(false),
-    keepAliveMySelft(false),
     running(false),
-    startCanReturn(false),
-    mutex()
+    terminate(false),
+    workerThreadID(),
+    onStart(),
+    onEnd()
     {}
 
+  ConsumerThread::ConsumerThread(
+      std::function<void()> onStart,
+      std::function<void()> onEnd) :
+    running(false),
+    terminate(false),
+    workerThreadID(),
+    onStart(std::move(onStart)),
+    onEnd(std::move(onEnd))
+{}
+
   ConsumerThread::~ConsumerThread() {
-    stop();
+    if (std::this_thread::get_id() == workerThreadID) {
+      LOG(FATAL) << "A thread cannot be able to destroy his own object" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+
+    blockingStop();
   }
 
   void ConsumerThread::start() {
-    std::lock_guard<std::mutex> g(mutex);
-
     bool expected(false);
-    if (!keepAlive.compare_exchange_weak(expected, true)) {
+    if (!running.compare_exchange_weak(expected, true)) {
       LOG(WARNING) << "Thread was already started" << std::endl;
       return;
     }
-
-    startCanReturn.store(false);
+    while (!actionQueue.empty())
+      actionQueue.poll();
 
     std::thread thread(std::bind(&ConsumerThread::run, this));
     thread.detach();
-    while (!startCanReturn.load())
-      std::this_thread::sleep_for(std::chrono::nanoseconds(10));
-  }
-
-  void ConsumerThread::terminateNow() {
-    keepAliveMySelft.store(false);
   }
 
   void ConsumerThread::stop() {
-    std::lock_guard<std::mutex> g(mutex);
-    bool expected(true);
-    if (!keepAlive.compare_exchange_weak(expected, false)) {
-      LOG(WARNING) << "Thread was already stopped" << std::endl;
+    runLater([this] () { terminate.store(true); });
+  }
+
+  void ConsumerThread::blockingStop() {
+    if (std::this_thread::get_id() == workerThreadID) {
+      LOG(WARNING) << "Calls inside this thread cannot be blocking" << std::endl;
       return;
     }
+
+    stop();
 
     while (running.load())
       std::this_thread::sleep_for(std::chrono::nanoseconds(10));
   }
 
   void ConsumerThread::run() {
-    keepAliveMySelft.store(true);
-    running.store(true);
-    startCanReturn.store(true);
-    onStart();
-    while (keepAlive.load() && keepAliveMySelft.load()) {
+    workerThreadID = std::this_thread::get_id();
+    terminate.store(false);
+
+    if (onStart)
+      onStart();
+
+    while (!terminate.load()) {
       processAll();
       std::this_thread::sleep_for(std::chrono::nanoseconds(10));
     }
-    onStop();
 
-    keepAlive.store(false);
+    if (onEnd)
+      onEnd();
+
     running.store(false);
   }
 
   void ConsumerThread::processAll() {
-    while (!actionQueue.empty() && keepAlive.load() && keepAliveMySelft.load())
+    while (!actionQueue.empty() && !terminate.load())
       actionQueue.poll()();
   }
 

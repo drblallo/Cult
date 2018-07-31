@@ -6,23 +6,16 @@
 #include <ConsumerThread.hpp>
 #include <thread>
 
-class ConsumerThreadStub : public utils::ConsumerThread {
- public:
-  ConsumerThreadStub() : ConsumerThread(), markCalled(false), stopCalled(false) {}
-  virtual ~ConsumerThreadStub() {}
-  bool markCalled;
-  bool stopCalled;
-  void appendToQueue() { runLater([this]() { markCalled = true; });}
-  void appendTermination() { runLater([this]() { terminateNow(); });}
-
- private:
-  virtual void onStop() {stopCalled = true;}
-
-};
+using namespace utils;
 
 class ConsumerThreadTest : public testing::Test {
  public:
-  ConsumerThreadStub thread;
+  ConsumerThreadTest() : thread(), markCalled(false) {}
+  ConsumerThread thread;
+  std::atomic<bool> markCalled;
+  void append() {
+    thread.runLater([this]() { markCalled.store(true); });
+  }
 };
 
 
@@ -31,35 +24,32 @@ TEST_F(ConsumerThreadTest, atCreationShouldNotBeRunning) {
 }
 
 TEST_F(ConsumerThreadTest, operationAppendedWillWait) {
-  thread.appendToQueue();
-  EXPECT_EQ(false, thread.markCalled);
+  append();
+  EXPECT_EQ(false, markCalled.load());
 }
 
 TEST_F(ConsumerThreadTest, operationAppendedWillBeProcessed) {
   thread.start();
-  thread.appendToQueue();
+  append();
 
-  int a = 0;
-  while (a++ < 100 && !thread.markCalled) {
+  while (!markCalled.load()) {
     std::this_thread::sleep_for(std::chrono::nanoseconds(10));
   }
-  EXPECT_EQ(true, thread.markCalled);
+  EXPECT_EQ(true, markCalled.load());
 }
 
 TEST_F(ConsumerThreadTest, canBeStoppedWhenDetached) {
   thread.start();
-  thread.appendToQueue();
-  int a(0);
-  while (!thread.markCalled && a++ < 100)
+  append();
+  while (!markCalled.load())
     std::this_thread::sleep_for(std::chrono::nanoseconds(10));
 
-  EXPECT_EQ(true, thread.markCalled);
+  EXPECT_EQ(true, markCalled.load());
   thread.stop();
 
-  a = 0;
-  while (!thread.stopCalled && a++ < 100)
+  while (thread.isRunning())
     std::this_thread::sleep_for(std::chrono::nanoseconds(10));
-  EXPECT_EQ(true, thread.stopCalled);
+  EXPECT_EQ(false, thread.isRunning());
 }
 
 TEST_F(ConsumerThreadTest, cannotBeStartedTwice) {
@@ -78,7 +68,7 @@ TEST_F(ConsumerThreadTest, cannotBeStoppedAtStart) {
 }
 
 TEST_F(ConsumerThreadTest, canBeDestroyedWhileRunning) {
-  auto t = new ConsumerThreadStub();
+  auto t = new ConsumerThread();
   t->start();
   delete t;
 }
@@ -86,15 +76,14 @@ TEST_F(ConsumerThreadTest, canBeDestroyedWhileRunning) {
 TEST_F(ConsumerThreadTest, canBeDestroyedWhileStopped) {
   thread.start();
   thread.stop();
-  int a = 0;
-  while (thread.isRunning() && a++ < 100)
+  while (thread.isRunning())
     std::this_thread::sleep_for(std::chrono::nanoseconds(10));
   EXPECT_EQ(false, thread.isRunning());
 }
 
 TEST_F(ConsumerThreadTest, canBeDestroyedOnStack) {
   for (int a = 0; a < 2; a++) {
-    ConsumerThreadStub t;
+    ConsumerThread t;
     t.start();
   }
 }
@@ -105,16 +94,74 @@ TEST_F(ConsumerThreadTest, baseObjectCanBeDestroyed) {
   delete t;
 }
 
-
-TEST_F(ConsumerThreadTest, testInternalTermination) {
-  thread.appendTermination();
+TEST_F(ConsumerThreadTest, cannotBeBlockStoppedFromHisOwnThread) {
   thread.start();
+  thread.runLater([this]() { thread.blockingStop(); markCalled.store(true); });
 
-  int a = 0;
-  while (a++ < 100 && !thread.isRunning()) {
+  while (!markCalled.load()) {
     std::this_thread::sleep_for(std::chrono::nanoseconds(10));
   }
-  EXPECT_EQ(false, thread.markCalled);
+  EXPECT_EQ(true, markCalled.load());
+  EXPECT_EQ(thread.isRunning(), true);
 }
+
+TEST_F(ConsumerThreadTest, canBeBlockedFronHisOwnThread) {
+  thread.start();
+  thread.runLater([this]() { thread.stop(); });
+
+  while (thread.isRunning()) {
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  }
+  EXPECT_EQ(thread.isRunning(), false);
+}
+
+TEST_F(ConsumerThreadTest, startCleansQueue) {
+  append();
+  thread.start();
+  int a = 0;
+  while (a++ < 100 && !markCalled.load()) {
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  }
+  EXPECT_EQ(false, markCalled.load());
+}
+
+TEST_F(ConsumerThreadTest, canBeRestarted) {
+  thread.start();
+  append();
+
+  while (!markCalled.load()) {
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  }
+  EXPECT_EQ(true, markCalled.load());
+
+  thread.blockingStop();
+  EXPECT_EQ(false, thread.isRunning());
+  markCalled.store(false);
+
+  thread.start();
+  append();
+
+  while (!markCalled.load()) {
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  }
+  EXPECT_EQ(true, markCalled.load());
+}
+
+TEST_F(ConsumerThreadTest, testPreAndPostFunction) {
+  int a(0);
+  int b(0);
+  ConsumerThread consumer([&a]() {a++;}, [&b] {b++;});
+  consumer.start();
+  while (a == 0)
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  EXPECT_EQ(1, a);
+
+  consumer.stop();
+  while (b == 0)
+    std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+  EXPECT_EQ(1, b);
+
+}
+
 
 
