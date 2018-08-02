@@ -18,8 +18,5 @@ int main(int, char** argv) {
 
   GEngine::Engine::getEngine().start();
 
-  while (GEngine::Engine::getEngine().isRunning())
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
   return 0;
 }

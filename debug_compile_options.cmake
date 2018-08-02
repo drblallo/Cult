@@ -1,42 +1,69 @@
+option(CULT_ASAN "Build with address sanitizer")
+option(CULT_TSAN "Build with thread sanitizer")
+option(CULT_UBSAN "Build with undefined behaviour sanitizer")
+option(CULT_MSAN "Build with memory sanitizer")
+option(CULT_COVERAGE "Build with code coverage")
+
 MACRO(debug_compile_options target)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-    TARGET_COMPILE_OPTIONS(
-            ${target} PRIVATE
-            "$<$<CONFIG:DEBUG>:-W>"
-            "$<$<CONFIG:DEBUG>:-Wall>"
-            "$<$<CONFIG:DEBUG>:-g>"
-    )
+        message("--compiling in debug mode")
+        TARGET_COMPILE_OPTIONS(${target} PRIVATE -W -Wall -g)
 
-    if (ASAN)
-        message("--compiling with asan ${ASAN}")
-        TARGET_COMPILE_OPTIONS(
-                ${target} PRIVATE
-                "$<$<CONFIG:DEBUG>:-O1>"
-                "$<$<CONFIG:DEBUG>:-fsanitize=${ASAN}>"
-                "$<$<CONFIG:DEBUG>:-fno-omit-frame-pointer>"
-        )
-        if (${ASAN} MATCHES "address")
-            TARGET_LINK_LIBRARIES(${target} PRIVATE debug asan)
-        elseif(${ASAN} MATCHES "thread")
-            TARGET_LINK_LIBRARIES(${target} PRIVATE debug tsan)
-        elseif(${ASAN} MATCHES "undefined")
-            TARGET_LINK_LIBRARIES(${target} PRIVATE debug ubsan)
+        if (CULT_ASAN)
+            message("--compiling with asan")
+            if (CLANG)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+            elseif(GNU)
+                TARGET_COMPILE_OPTIONS(${target} PRIVATE -O1 -fsanitize=address -fno-omit-frame-pointer)
+                TARGET_LINK_LIBRARIES(${target} PRIVATE asan)
+            endif()
         endif()
-    endif()
 
-    if (COVERAGE)
-        message("--compiling with coverage")
-        set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
-        TARGET_COMPILE_OPTIONS(
-                ${target} PRIVATE
-                "$<$<CONFIG:DEBUG>:--coverage>"
-                "$<$<CONFIG:DEBUG>:-O0>"
-                "$<$<CONFIG:DEBUG>:-fno-inline>"
-                "$<$<CONFIG:DEBUG>:-fno-inline-small-functions>"
-                "$<$<CONFIG:DEBUG>:-fno-default-inline>"
-                "$<$<CONFIG:DEBUG>:-fno-elide-constructors>"
-        )
-        TARGET_LINK_LIBRARIES(${target} PRIVATE debug gcov)
+        if (CULT_TSAN)
+            message("--compiling with tsan")
+            if (CLANG)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
+            elseif(GNU)
+                TARGET_COMPILE_OPTIONS(${target} PRIVATE -O1 -fsanitize=thread -fno-omit-frame-pointer)
+                TARGET_LINK_LIBRARIES(${target} PRIVATE tsan)
+            endif()
+        endif()
+
+        if (CULT_UBSAN)
+            message("--compiling with ubsan")
+            if (CLANG)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined")
+            elseif(GNU)
+                TARGET_COMPILE_OPTIONS(${target} PRIVATE -O1 -fsanitize=undefined -fno-omit-frame-pointer)
+                TARGET_LINK_LIBRARIES(${target} PRIVATE ubsan)
+            endif()
+        endif()
+
+        if (CULT_MSAN)
+            message("--compiling with memory sanitizer")
+            if (CLANG)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory")
+            elseif(GNU)
+                message("--compiling with msan")
+                TARGET_COMPILE_OPTIONS(${target} PRIVATE -O1 -fsanitize=memory
+                    -fno-omit-frame-pointer -fno-optimize-sibling-calls)
+                TARGET_LINK_LIBRARIES(${target} PRIVATE debug msan)
+            endif()
+        endif()
+
+        if (CULT_COVERAGE)
+            message("--compiling with coverage")
+            set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
+            TARGET_COMPILE_OPTIONS(${target} PRIVATE -O0 -fno-inline -fno-elide-constructors)
+            if (clang)
+                TARGET_COMPILE_OPTIONS(${target} PRIVATE --coverage)
+            elseif(GNU)
+                TARGET_COMPILE_OPTIONS(${target} PRIVATE --coverage -fno-inline-small-functions -fno-default-inline)
+                TARGET_LINK_LIBRARIES(${target} PRIVATE gcov)
+            endif()
+        endif()
+
     endif()
 
 ENDMACRO()

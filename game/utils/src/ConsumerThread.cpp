@@ -3,88 +3,107 @@
 //
 
 #include "ConsumerThread.hpp"
+
 #include <g3log/g3log.hpp>
+#include <utility>
 
-namespace utils {
+namespace utils
+{
+	ConsumerThread::ConsumerThread()
+			: running(false), terminate(false), workerThreadID()
+	{
+	}
 
-  ConsumerThread::ConsumerThread() :
-    running(false),
-    terminate(false),
-    workerThreadID(),
-    onStart(),
-    onEnd()
-    {}
+	ConsumerThread::~ConsumerThread()
+	{
+		if (std::this_thread::get_id() == workerThreadID.load())
+		{
+			LOG(FATAL) << "A thread cannot be able to destroy his own object"
+								 << std::endl;
+			exit(EXIT_FAILURE);
+		}
 
-  ConsumerThread::ConsumerThread(
-      std::function<void()> onStart,
-      std::function<void()> onEnd) :
-    running(false),
-    terminate(false),
-    workerThreadID(),
-    onStart(std::move(onStart)),
-    onEnd(std::move(onEnd))
-{}
+		blockingStop();
+	}
 
-  ConsumerThread::~ConsumerThread() {
-    if (std::this_thread::get_id() == workerThreadID) {
-      LOG(FATAL) << "A thread cannot be able to destroy his own object" << std::endl;
-      exit(EXIT_FAILURE);
-    }
+	void ConsumerThread::start(
+			std::function<void()> onStart, std::function<void()> onStop)
+	{
+		bool expected(false);
+		if (!running.compare_exchange_weak(expected, true))
+		{
+			LOG(WARNING) << "Thread was already started" << std::endl;
+			return;
+		}
+		while (!actionQueue.empty())
+			actionQueue.poll();
 
-    blockingStop();
-  }
+		std::thread thread(std::bind(
+				&ConsumerThread::run, this, std::move(onStart), std::move(onStop)));
 
-  void ConsumerThread::start() {
-    bool expected(false);
-    if (!running.compare_exchange_weak(expected, true)) {
-      LOG(WARNING) << "Thread was already started" << std::endl;
-      return;
-    }
-    while (!actionQueue.empty())
-      actionQueue.poll();
+		workerThreadID.store(thread.get_id());
+		thread.detach();
+	}
 
-    std::thread thread(std::bind(&ConsumerThread::run, this));
-    thread.detach();
-  }
+	void ConsumerThread::blockingStart(
+			std::function<void()> onStart, std::function<void()> onStop)
+	{
+		bool expected(false);
+		if (!running.compare_exchange_weak(expected, true))
+		{
+			LOG(WARNING) << "Thread was already started" << std::endl;
+			return;
+		}
+		while (!actionQueue.empty())
+			actionQueue.poll();
 
-  void ConsumerThread::stop() {
-    runLater([this] () { terminate.store(true); });
-  }
+		run(std::move(onStart), std::move(onStop));
+	}
 
-  void ConsumerThread::blockingStop() {
-    if (std::this_thread::get_id() == workerThreadID) {
-      LOG(WARNING) << "Calls inside this thread cannot be blocking" << std::endl;
-      return;
-    }
+	void ConsumerThread::stop()
+	{
+		runLater([this]() { terminate.store(true); });
+	}
 
-    stop();
+	void ConsumerThread::blockingStop()
+	{
+		if (std::this_thread::get_id() == workerThreadID.load())
+		{
+			LOG(WARNING) << "Calls inside this thread cannot be blocking"
+									 << std::endl;
+			return;
+		}
 
-    while (running.load())
-      std::this_thread::sleep_for(std::chrono::nanoseconds(10));
-  }
+		stop();
 
-  void ConsumerThread::run() {
-    workerThreadID = std::this_thread::get_id();
-    terminate.store(false);
+		while (running.load())
+			std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+	}
 
-    if (onStart)
-      onStart();
+	void ConsumerThread::run(
+			std::function<void()> onStart, std::function<void()> onStop)
+	{
+		terminate.store(false);
 
-    while (!terminate.load()) {
-      processAll();
-      std::this_thread::sleep_for(std::chrono::nanoseconds(10));
-    }
+		if (onStart)
+			onStart();
 
-    if (onEnd)
-      onEnd();
+		while (!terminate.load())
+		{
+			processAll();
+			std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+		}
 
-    running.store(false);
-  }
+		if (onStop)
+			onStop();
 
-  void ConsumerThread::processAll() {
-    while (!actionQueue.empty() && !terminate.load())
-      actionQueue.poll()();
-  }
+		running.store(false);
+	}
 
-}  // namespace utils
+	void ConsumerThread::processAll()
+	{
+		while (!actionQueue.empty() && !terminate.load())
+			actionQueue.poll()();
+	}
 
+}	// namespace utils

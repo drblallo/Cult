@@ -10,12 +10,13 @@
 
 class GLFWwindow;
 
-namespace GEngine {
+namespace GEngine
+{
 class Window;
 
-class Engine {
-
- public:
+class Engine
+{
+  public:
   Engine();
   ~Engine();
   static Engine& getEngine();
@@ -23,10 +24,11 @@ class Engine {
   static void terminate();
 
   void start();
+  void blockingStart();
   void stop();
-  bool isRunning() const {return thread.isRunning();}
+  bool isRunning() const { return thread.isRunning(); }
 
- private:
+  private:
   std::unique_ptr<Window> window;
   utils::ConsumerThread thread;
 
@@ -43,4 +45,4 @@ class Engine {
 };
 }  // namespace GEngine
 
-#endif //CULT_ENGINE_HPP
+#endif  // CULT_ENGINE_HPP
