@@ -7,33 +7,32 @@
 #include <functional>
 #include <string>
 
-class GLFWwindow;
+#include "Renderer.hpp"
+
+struct GLFWwindow;
 
 namespace GEngine
 {
 	class Window
 	{
 		public:
-		Window(int xSize, int ySize, const std::string &name);
+		Window(
+				int xSize, int ySize, const std::string &name, Window *share = nullptr);
 		~Window();
 		Window(const Window &other) = delete;
 		Window &operator=(const Window &other) = delete;
 		Window(Window &&other) noexcept;
-		void swapBuffer();
+		void update();
 		bool shouldClose() const;
 		void makeCurrentContext();
 		void setShouldClose(bool shouldClose);
-		static void setInputCallback(
-				std::function<void(int key, int scanCode, int action, int mods)>
-						callback);
 
 		private:
 		GLFWwindow *window;
-		static std::function<void(int key, int scanCode, int action, int mods)>
-				inputCallback;
-		static void underlyingCallback(
+		Renderer renderer;
+		void keyCallback(int key, int scanCode, int action, int mods);
+		static void staticKeyCallback(
 				GLFWwindow *window, int key, int scanCode, int action, int mods);
-		void nextFrame();
 	};
 }	// namespace GEngine
 

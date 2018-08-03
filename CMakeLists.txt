@@ -9,6 +9,7 @@ add_subdirectory(test)
 add_subdirectory(game)
 add_subdirectory(g3log)
 add_subdirectory(glfw)
+add_subdirectory(glm)
 
 message("COMPILING CULT")
 ADD_EXECUTABLE(Cult main.cpp)

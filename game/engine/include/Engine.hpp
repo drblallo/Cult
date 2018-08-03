@@ -6,43 +6,26 @@
 #define CULT_ENGINE_HPP
 
 #include <memory>
-#include "ConsumerThread.hpp"
 
-class GLFWwindow;
+#include "ConsumerThread.hpp"
 
 namespace GEngine
 {
-class Window;
+	class Window;
 
-class Engine
-{
-  public:
-  Engine();
-  ~Engine();
-  static Engine& getEngine();
-  static void init();
-  static void terminate();
+	class Engine
+	{
+		public:
+		static void start();
+		static void blockingStart();
+		static void stop();
+		static void terminate();
+		static bool isRunning();
 
-  void start();
-  void blockingStart();
-  void stop();
-  bool isRunning() const { return thread.isRunning(); }
+		private:
+		static void init();
+		static void logError(int error, const char* description);
+	};
+}	// namespace GEngine
 
-  private:
-  std::unique_ptr<Window> window;
-  utils::ConsumerThread thread;
-
-  static std::atomic<bool> initialized;
-  static std::mutex initLock;
-
-  void update();
-  void onStart();
-  void onStop();
-
-  static void logError(int error, const char* description);
-  static Engine engine;
-  void inputCallback(int key, int scanCode, int action, int mods);
-};
-}  // namespace GEngine
-
-#endif  // CULT_ENGINE_HPP
+#endif	// CULT_ENGINE_HPP

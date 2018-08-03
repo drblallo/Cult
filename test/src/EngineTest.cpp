@@ -14,30 +14,27 @@ class EngineTest: public testing::Test
 {
 	virtual void SetUp()
 	{
-		Engine::getEngine().start();
-		waitUntil([]() { return Engine::getEngine().isRunning();});
+		Engine::start();
+		waitUntil([]() { return Engine::isRunning(); });
 	}
 
 	virtual void TearDown()
 	{
-		Engine::getEngine().stop();
-		waitUntil([]() { return Engine::getEngine().isRunning();}, false);
+		Engine::stop();
+		waitUntil([]() { return Engine::isRunning(); }, false);
 	}
 };
 
-TEST_F(EngineTest, engineShouldStart)
-{
-	EXPECT_EQ(Engine::getEngine().isRunning(), true);
-}
+TEST_F(EngineTest, engineShouldStart) { EXPECT_EQ(Engine::isRunning(), true); }
 
 TEST_F(EngineTest, engineAndEnvironementShouldRestart)
 {
-	Engine::getEngine().stop();
+	Engine::stop();
 
-	waitUntil([]() { return Engine::getEngine().isRunning();}, false);
+	waitUntil([]() { return Engine::isRunning(); }, false);
 
 	Engine::terminate();
-	Engine::getEngine().start();
+	Engine::start();
 
-	waitUntil([]() { return Engine::getEngine().isRunning();});
+	waitUntil([]() { return Engine::isRunning(); });
 }

@@ -7,18 +7,14 @@
 #include <GLFW/glfw3.h>
 #include <g3log/g3log.hpp>
 
+#include "Engine_Internal.hpp"
 #include "Window.hpp"
 
 namespace GEngine
 {
-	Engine Engine::engine;
-	std::atomic<bool> Engine::initialized;
-	std::mutex Engine::initLock;
-
-	Engine::Engine(): window(nullptr), thread() {}
-	Engine::~Engine() { thread.blockingStop(); }
-
-	Engine &Engine::getEngine() { return engine; }
+	std::atomic<bool> initialized;
+	std::mutex initLock;
+	Engine_Internal engine;
 
 	void Engine::init()
 	{
@@ -50,59 +46,25 @@ namespace GEngine
 		glfwTerminate();
 	}
 
-	void Engine::update()
-	{
-		window->swapBuffer();
-		glfwPollEvents();
-
-		if (window->shouldClose())
-			stop();
-		else
-			thread.runLater([this]() { update(); });
-	}
-
-	void Engine::onStop()
-	{
-		thread.stop();
-		LOG(INFO) << "Tearing down Engine" << std::endl;
-
-		window.reset(nullptr);
-	}
-
 	void Engine::start()
 	{
-		thread.start([this]() { onStart(); }, [this] { onStop(); });
+		init();
+		engine.start();
 	}
 
 	void Engine::blockingStart()
 	{
-		thread.blockingStart([this]() { onStart(); }, [this] { onStop(); });
-	}
-
-	void Engine::stop() { thread.stop(); }
-
-	void Engine::onStart()
-	{
 		init();
-		window = std::make_unique<Window>(Window(640, 480, "Main Window"));
-
-		Window::setInputCallback(
-				[this](int a, int b, int c, int d) { inputCallback(a, b, c, d); });
-
-		window->makeCurrentContext();
-		glfwSwapInterval(1);
-
-		thread.runLater([this]() { update(); });
+		engine.blockingStart();
 	}
+
+	void Engine::stop() { engine.stop(); }
 
 	void Engine::logError(int, const char *description)
 	{
 		LOG(WARNING) << description << std::endl;
 	}
 
-	void Engine::inputCallback(int key, int, int action, int)
-	{
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-			window->setShouldClose(true);
-	}
+	bool Engine::isRunning() { return engine.isRunning(); }
+
 }	//  namespace GEngine

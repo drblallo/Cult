@@ -16,7 +16,7 @@ int main(int, char** argv) {
 
   LOG(INFO) << "Starting Cult" << std::endl;
 
-  GEngine::Engine::getEngine().start();
+  GEngine::Engine::blockingStart();
 
   return 0;
 }

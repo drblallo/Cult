@@ -9,12 +9,16 @@
 
 namespace GEngine
 {
-	std::function<void(int, int, int, int)> Window::inputCallback(nullptr);
-
-	Window::Window(int xSize, int ySize, const std::string &name)
+	Window::Window(int xSize, int ySize, const std::string &name, Window *share)
 	{
-		window = glfwCreateWindow(xSize, ySize, name.c_str(), nullptr, nullptr);
-		glfwSetKeyCallback(window, Window::underlyingCallback);
+		GLFWwindow *shrWindow(nullptr);
+		if (share)
+			shrWindow = share->window;
+
+		window = glfwCreateWindow(xSize, ySize, name.c_str(), nullptr, shrWindow);
+
+		glfwSetWindowUserPointer(window, this);
+		glfwSetKeyCallback(window, Window::staticKeyCallback);
 		if (!window)
 		{
 			LOG(FATAL) << "Could not create Window" << std::endl;
@@ -33,12 +37,16 @@ namespace GEngine
 
 	Window::Window(Window &&other) noexcept: window(other.window)
 	{
-		glfwSetKeyCallback(window, Window::underlyingCallback);
-		other.inputCallback = nullptr;
-		other.window				= nullptr;
+		glfwSetKeyCallback(window, Window::staticKeyCallback);
+		other.window = nullptr;
+		glfwSetWindowUserPointer(window, this);
 	}
 
-	void Window::swapBuffer() { glfwSwapBuffers(window); }
+	void Window::update()
+	{
+		renderer.render();
+		glfwSwapBuffers(window);
+	}
 
 	bool Window::shouldClose() const
 	{
@@ -47,22 +55,23 @@ namespace GEngine
 
 	void Window::makeCurrentContext() { glfwMakeContextCurrent(window); }
 
-	void Window::setInputCallback(
-			std::function<void(int, int, int, int)> callback)
+	void Window::staticKeyCallback(
+			GLFWwindow *window, int key, int scanCode, int action, int mods)
 	{
-		inputCallback = std::move(callback);
-	}
-
-	void Window::underlyingCallback(
-			GLFWwindow *, int key, int scanCode, int action, int mods)
-	{
-		if (inputCallback)
-			inputCallback(key, scanCode, action, mods);
+		Window *w = static_cast<Window *>(glfwGetWindowUserPointer(window));
+		if (w)
+			w->keyCallback(key, scanCode, action, mods);
 	}
 
 	void Window::setShouldClose(bool shouldClose)
 	{
 		glfwSetWindowShouldClose(window, shouldClose);
+	}
+
+	void Window::keyCallback(int key, int, int action, int)
+	{
+		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+			setShouldClose(true);
 	}
 
 }	// namespace GEngine
