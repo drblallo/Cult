@@ -8,6 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
+#include <vector>
 
 namespace GEngine
 {
@@ -65,10 +66,12 @@ namespace GEngine
 		{
 			translate(glm::vec3(x, y, z));
 		}
+
 		inline void rotate(float x, float y = 0.0f, float z = 0.0f)
 		{
 			rotate(glm::vec3(x, y, z));
 		}
+
 		inline void scale(float x, float y = 0.0f, float z = 0.0f)
 		{
 			scale(glm::vec3(x, y, z));
@@ -86,6 +89,7 @@ namespace GEngine
 			projectionDirty					= true;
 			invertedProjectionDirty = true;
 		}
+
 		glm::vec3 translation;
 		glm::quat rotation;
 		glm::vec3 scaling;

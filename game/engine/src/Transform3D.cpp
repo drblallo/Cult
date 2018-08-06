@@ -4,14 +4,18 @@
 
 #include "Transform3D.hpp"
 
+#include <algorithm>
+
 namespace GEngine
 {
 	Transform3D::Transform3D()
 			: translation(),
 				rotation(),
 				scaling(1),
-				projectionDirty(true),
-				invertedProjectionDirty(true)
+				cachedProjection(1),
+				projectionDirty(false),
+				cachedInvertedProjection(1),
+				invertedProjectionDirty(false)
 	{
 	}
 
