@@ -35,9 +35,9 @@ namespace Utils
 			return toReturn;
 		}
 
-		bool hasChild(TreeItem* t) const
+		bool hasChild(TreeItem& t) const
 		{
-			return children.find(t) != children.end();
+			return children.find(&t) != children.end();
 		}
 
 		const T& getData() const { return data; }
@@ -63,18 +63,21 @@ namespace Utils
 		{
 			assert(parent != nullptr);
 			auto childSet(&parent->children);
-			assert(getParent()->hasChild(this));
+			assert(getParent()->hasChild(*this));
 
 			std::unique_ptr<TreeItem<T>> ptr(std::move(childSet->at(this)));
 			childSet->erase(this);
-			// childSet->erase(std::remove(childSet->begin(), childSet->end(), &item),
-			// childSet->end());
 			parent = nullptr;
 			return ptr;
 		}
 
-		TreeItem<T>& addChild(std::unique_ptr<TreeItem<T>>& child)
+		TreeItem<T>& addChild(std::unique_ptr<TreeItem<T>>& child) {
+			addChild(std::move(child));
+		}
+
+		TreeItem<T>& addChild(std::unique_ptr<TreeItem<T>>&& child)
 		{
+			assert(!hasChild(*child.get()));
 			assert(child != nullptr);
 			assert(child.get() != this);
 			assert(!child->isAncestor(*this));
@@ -88,10 +91,8 @@ namespace Utils
 
 		TreeItem<T>& addChild(const T& data)
 		{
-			std::unique_ptr<TreeItem<T>> ptr(std::make_unique<TreeItem<T>>(data));
-			return addChild(ptr);
+			return addChild(std::make_unique<TreeItem<T>>(data));
 		}
-
 
 		private:
 		TreeItem<T>* parent;

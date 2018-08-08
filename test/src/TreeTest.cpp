@@ -2,13 +2,15 @@
 // Created by massimo on 05/08/18.
 //
 
-#include "TreeItem.hpp"
 #include <gtest/gtest.h>
+
+#include "TreeItem.hpp"
 
 using namespace Utils;
 
-template <typename T>
-bool isTreeWellMade (TreeItem<T>* tree) {
+template<typename T>
+bool isTreeWellMade(TreeItem<T>* tree)
+{
 	if (!tree)
 		return true;
 
@@ -19,41 +21,98 @@ bool isTreeWellMade (TreeItem<T>* tree) {
 	if (!tree->getParent())
 		return true;
 
-	return (tree->getParent()->hasChild(tree));
+	return (tree->getParent()->hasChild(*tree));
 }
 
-class TreeTest : public testing::Test {
- public:
-	TreeTest() : tree(4) {}
+class TreeTest: public testing::Test
+{
+	public:
+	TreeTest(): tree(4) {}
 	Tree<int> tree;
-	virtual void SetUp()
-	{
+	virtual void SetUp() {}
 
-	}
-
-	virtual void TearDown() {
-		EXPECT_TRUE(isTreeWellMade<int>(&tree.getRoot()));
-	}
+	virtual void TearDown() { EXPECT_TRUE(isTreeWellMade<int>(&tree.getRoot())); }
 };
 
-
-TEST_F(TreeTest, defaultRootHasNoChildren) {
+TEST_F(TreeTest, defaultRootHasNoChildren)
+{
 	EXPECT_EQ(tree.getRoot().getChildCount(), 0);
 	EXPECT_EQ(tree.getRoot().getChildren().size(), 0);
 }
 
-
-TEST_F(TreeTest, rootCanBeSet) {
+TEST_F(TreeTest, rootCanBeSet)
+{
 	tree.setRoot(5);
 	EXPECT_EQ(tree.getRoot().getData(), 5);
 }
 
-TEST_F(TreeTest, canAddChild) {
+TEST_F(TreeTest, canAddChild)
+{
 	tree.setRoot(5);
 	TreeItem<int>* t = &tree.getRoot().addChild(1);
 
 	EXPECT_EQ(t->getData(), 1);
-	EXPECT_EQ(tree.getRoot().hasChild(t), 1);
+	EXPECT_EQ(tree.getRoot().hasChild(*t), 1);
 }
 
+TEST_F(TreeTest, canAddMultipleChild)
+{
+	for (int a = 0; a < 10; a++)
+	{
+		EXPECT_TRUE(tree.getRoot().hasChild(tree.getRoot().addChild(a)));
+	}
+}
 
+TEST_F(TreeTest, recursiveAddChild)
+{
+	TreeItem<int>* node(&tree.getRoot());
+	for (int a = 0; a < 20; a++)
+	{
+		node = &node->addChild(a);
+		EXPECT_EQ(node->getData(), a);
+	}
+
+	for (int a = 19; a >= 0; a--)
+	{
+		EXPECT_EQ(node->getData(), a);
+		node = node->getParent();
+	}
+}
+
+TEST_F(TreeTest, childrenCanBeRemoved)
+{
+	for (int a = 0; a < 10; a++)
+		tree.getRoot().addChild(a);
+
+	for (TreeItem<int>* child : tree.getRoot().getChildren()) {
+		EXPECT_EQ(child->removeFromParent().get(), child);
+		EXPECT_FALSE(tree.getRoot().hasChild(*child));
+	}
+}
+
+#ifndef NDEBUG
+TEST_F(TreeTest, orphanChildCantBeRemoved)
+{
+	EXPECT_DEBUG_DEATH(tree.getRoot().removeFromParent(), ".*");
+}
+#endif
+
+TEST_F(TreeTest, removedNodesCanBeReadded) {
+	TreeItem<int>& node = tree.getRoot().addChild(1);
+	TreeItem<int>* ptr(&node);
+	EXPECT_EQ(&tree.getRoot().addChild(node.removeFromParent()), ptr);
+}
+
+TEST_F(TreeTest, dataCanBeSet) {
+	tree.getRoot().setData(2);
+	EXPECT_EQ(tree.getRoot().getData(), 2);
+}
+
+#ifndef NDEBUG
+TEST_F(TreeTest, nodeCantBeAddedToHisOwnAncestor) {
+	std::unique_ptr<TreeItem<int>> ptr(std::make_unique<TreeItem<int>>(2));
+	std::unique_ptr<TreeItem<int>> ptr2(std::make_unique<TreeItem<int>>(3));
+	ptr->addChild(ptr2);
+	EXPECT_DEBUG_DEATH(ptr2->addChild(ptr),".*");
+}
+#endif

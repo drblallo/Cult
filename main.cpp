@@ -8,7 +8,7 @@ struct CoutSink {
   }
 };
 
-int main(int, char** argv) {
+int main(int, char**) {
   auto worker = g3::LogWorker::createLogWorker();
   //auto defaultHandler = worker->addDefaultLogger("log", argv[0]);
   worker->addSink(std::make_unique<CoutSink>(), &CoutSink::ReceiveLogMessage);
