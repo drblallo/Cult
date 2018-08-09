@@ -84,7 +84,8 @@ TEST_F(TreeTest, childrenCanBeRemoved)
 	for (int a = 0; a < 10; a++)
 		tree.getRoot().addChild(a);
 
-	for (TreeItem<int>* child : tree.getRoot().getChildren()) {
+	for (TreeItem<int>* child : tree.getRoot().getChildren())
+	{
 		EXPECT_EQ(child->removeFromParent().get(), child);
 		EXPECT_FALSE(tree.getRoot().hasChild(*child));
 	}
@@ -97,22 +98,35 @@ TEST_F(TreeTest, orphanChildCantBeRemoved)
 }
 #endif
 
-TEST_F(TreeTest, removedNodesCanBeReadded) {
+TEST_F(TreeTest, removedNodesCanBeReadded)
+{
 	TreeItem<int>& node = tree.getRoot().addChild(1);
 	TreeItem<int>* ptr(&node);
 	EXPECT_EQ(&tree.getRoot().addChild(node.removeFromParent()), ptr);
 }
 
-TEST_F(TreeTest, dataCanBeSet) {
+TEST_F(TreeTest, dataCanBeSet)
+{
 	tree.getRoot().setData(2);
 	EXPECT_EQ(tree.getRoot().getData(), 2);
 }
 
+TEST_F(TreeTest, ancestrorsShouldSayTheyAre)
+{
+	std::unique_ptr<TreeItem<int>> ptr(std::make_unique<TreeItem<int>>(2));
+	TreeItem<int>* reference(ptr.get());
+	tree.getRoot().addChild(std::move(ptr));
+
+	EXPECT_TRUE(tree.getRoot().isAncestor(*reference));
+	EXPECT_FALSE(reference->isAncestor(tree.getRoot()));
+}
+
 #ifndef NDEBUG
-TEST_F(TreeTest, nodeCantBeAddedToHisOwnAncestor) {
+TEST_F(TreeTest, nodeCantBeAddedToHisOwnAncestor)
+{
 	std::unique_ptr<TreeItem<int>> ptr(std::make_unique<TreeItem<int>>(2));
 	std::unique_ptr<TreeItem<int>> ptr2(std::make_unique<TreeItem<int>>(3));
-	ptr->addChild(ptr2);
-	EXPECT_DEBUG_DEATH(ptr2->addChild(ptr),".*");
+	ptr->addChild(std::move(ptr2));
+	EXPECT_DEBUG_DEATH(ptr2->addChild(std::move(ptr)), ".*");
 }
 #endif

@@ -71,21 +71,17 @@ namespace Utils
 			return ptr;
 		}
 
-		TreeItem<T>& addChild(std::unique_ptr<TreeItem<T>>& child) {
-			addChild(std::move(child));
-		}
-
 		TreeItem<T>& addChild(std::unique_ptr<TreeItem<T>>&& child)
 		{
+			assert(child.get() != nullptr);
 			assert(!hasChild(*child.get()));
-			assert(child != nullptr);
 			assert(child.get() != this);
 			assert(!child->isAncestor(*this));
 			assert(child->parent == nullptr);
 
 			TreeItem<T>* ptr(child.get());
-			child->parent = this;
-			children.emplace(child.get(), std::move(child));
+			child->parent					= this;
+			children[child.get()] = std::move(child);
 			return *ptr;
 		}
 
@@ -105,7 +101,9 @@ namespace Utils
 	{
 		public:
 		explicit Tree(const T& rootData)
-				: root(std::make_unique<TreeItem<T>>(rootData)) {}
+				: root(std::make_unique<TreeItem<T>>(rootData))
+		{
+		}
 
 		TreeItem<T>& getRoot() const { return *root; }
 		void setRoot(const T& data) { root.reset(new TreeItem<T>(data)); }
