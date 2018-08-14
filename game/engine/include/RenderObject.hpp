@@ -10,6 +10,8 @@ namespace GEngine
 {
 	class RenderObject
 	{
+		friend class Renderer;
+
 		public:
 		RenderObject(): transform() {}
 		virtual void draw()			= 0;

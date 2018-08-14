@@ -11,12 +11,16 @@
 
 namespace GEngine
 {
+	class RenderObject;
 	class Renderer
 	{
+		friend class RenderObject;
+
 		public:
 		void render();
 
 		private:
+		void addObject(std::unique_ptr<RenderObject>&& obj);
 		std::vector<std::unique_ptr<RenderObject> > drawable;
 	};
 }	// namespace GEngine

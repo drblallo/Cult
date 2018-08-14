@@ -46,19 +46,39 @@ namespace Utils
 
 		void setData(const T& newData) { data = newData; }
 
-		bool isAncestor(TreeItem<T>& descendant)
+		template<typename F>
+		void forAllChildren(F&& function)
 		{
-			TreeItem<T>* des(&descendant);
-			while (des)
-			{
-				if (des == this)
-					return true;
-
-				des = des->getParent();
-			}
-			return false;
+			function(data);
+			for (const auto& child : children)
+				child.first->forAllChildren(function);
 		}
 
+		template<typename F>
+		void forAllAncestors(F&& function)
+		{
+			function(data);
+			if (parent)
+				parent->forAllAncestors(function);
+		}
+
+		bool isAncestor(TreeItem<T>& descendant)
+		{
+			bool found = false;
+
+			descendant.forAllAncestors([this, &found](T& ancestor) {
+				if (&ancestor == &data)
+					found = true;
+			});
+
+			return found;
+		}
+
+		/*
+		 * transfers ownership of the current tree item to the caller.
+		 * Childs are not affected
+		 *
+		 */
 		std::unique_ptr<TreeItem<T>> removeFromParent()
 		{
 			assert(parent != nullptr);

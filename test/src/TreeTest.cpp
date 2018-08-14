@@ -2,7 +2,7 @@
 // Created by massimo on 05/08/18.
 //
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 #include "TreeItem.hpp"
 
@@ -30,7 +30,6 @@ class TreeTest: public testing::Test
 	TreeTest(): tree(4) {}
 	Tree<int> tree;
 	virtual void SetUp() {}
-
 	virtual void TearDown() { EXPECT_TRUE(isTreeWellMade<int>(&tree.getRoot())); }
 };
 
@@ -130,3 +129,35 @@ TEST_F(TreeTest, nodeCantBeAddedToHisOwnAncestor)
 	EXPECT_DEBUG_DEATH(ptr2->addChild(std::move(ptr)), ".*");
 }
 #endif
+
+TEST_F(TreeTest, treeForAllShouldBeAppliedToEveryOne)
+{
+	TreeItem<int>* element = &tree.getRoot();
+	for (int a = 0; a < 5; a++)
+	{
+		for (int a = 0; a < 5; a++)
+			element->addChild(5);
+		element = element->getChildren()[0];
+	}
+	int count = 0;
+
+	std::function<void(int&)> fun([&count](int&) { count++; });
+	tree.getRoot().forAllChildren(fun);
+	EXPECT_EQ(count, 26);
+}
+
+TEST_F(TreeTest, treeForAllAncestorShouldBeAppliedToEveryOne)
+{
+	TreeItem<int>* element(&tree.getRoot());
+	for (int a = 0; a < 5; a++)
+	{
+		element->addChild(5);
+		element = element->getChildren()[0];
+	}
+
+	int count = 0;
+
+	std::function<void(int&)> fun([&count](int&) { count++; });
+	element->forAllAncestors(fun);
+	EXPECT_EQ(count, 6);
+}

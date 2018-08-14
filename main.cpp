@@ -1,7 +1,7 @@
-#include <g3log/logworker.hpp>
 #include <iostream>
 
 #include "Engine.hpp"
+#include "g3log/logworker.hpp"
 
 struct CoutSink
 {
