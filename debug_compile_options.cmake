@@ -52,7 +52,7 @@ MACRO(debug_compile_options target)
             elseif(GNU)
                 message("--compiling with msan")
                 TARGET_COMPILE_OPTIONS(${target} PRIVATE -O1 -fsanitize=memory
-                    -fno-omit-frame-pointer -fno-optimize-sibling-calls)
+                    -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins=2)
                 TARGET_LINK_LIBRARIES(${target} PRIVATE debug msan)
             endif()
         endif()
