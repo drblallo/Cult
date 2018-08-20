@@ -10,7 +10,7 @@
 #include "Engine_Internal.hpp"
 #include "Window.hpp"
 
-namespace GEngine
+namespace engine
 {
 	std::atomic<bool> initialized;
 	std::mutex initLock;
@@ -22,7 +22,7 @@ namespace GEngine
 		if (initialized.load())
 			return;
 
-		LOG(INFO) << "Starting Engine" << std::endl;
+		LOG(INFO) << "Starting Engine";
 
 		if (!glfwInit())
 		{
@@ -67,4 +67,4 @@ namespace GEngine
 
 	bool Engine::isRunning() { return engine.isRunning(); }
 
-}	//  namespace GEngine
+}	// namespace engine

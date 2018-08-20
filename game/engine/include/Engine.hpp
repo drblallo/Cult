@@ -9,7 +9,7 @@
 
 #include "ConsumerThread.hpp"
 
-namespace GEngine
+namespace engine
 {
 	class Window;
 
@@ -26,6 +26,6 @@ namespace GEngine
 		static void init();
 		static void logError(int error, const char* description);
 	};
-}	// namespace GEngine
+}	// namespace engine
 
 #endif	// CULT_ENGINE_HPP

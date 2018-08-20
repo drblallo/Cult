@@ -4,9 +4,10 @@
 
 #include "gtest/gtest.h"
 
+#include "SoutSink.hpp"
 #include "TreeItem.hpp"
 
-using namespace Utils;
+using namespace utils;
 
 template<typename T>
 bool isTreeWellMade(TreeItem<T>* tree)
@@ -29,7 +30,7 @@ class TreeTest: public testing::Test
 	public:
 	TreeTest(): tree(4) {}
 	Tree<int> tree;
-	virtual void SetUp() {}
+	virtual void SetUp() { utils::initLogger(false); }
 	virtual void TearDown() { EXPECT_TRUE(isTreeWellMade<int>(&tree.getRoot())); }
 };
 
@@ -90,7 +91,7 @@ TEST_F(TreeTest, childrenCanBeRemoved)
 	}
 }
 
-#ifndef NDEBUG
+#ifdef CULT_DEATH_TEST
 TEST_F(TreeTest, orphanChildCantBeRemoved)
 {
 	EXPECT_DEBUG_DEATH(tree.getRoot().removeFromParent(), ".*");
@@ -120,7 +121,7 @@ TEST_F(TreeTest, ancestrorsShouldSayTheyAre)
 	EXPECT_FALSE(reference->isAncestor(tree.getRoot()));
 }
 
-#ifndef NDEBUG
+#ifdef CULT_DEATH_TEST
 TEST_F(TreeTest, nodeCantBeAddedToHisOwnAncestor)
 {
 	std::unique_ptr<TreeItem<int>> ptr(std::make_unique<TreeItem<int>>(2));

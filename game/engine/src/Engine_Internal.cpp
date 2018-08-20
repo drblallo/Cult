@@ -9,7 +9,7 @@
 
 #include "Window.hpp"
 
-namespace GEngine
+namespace engine
 {
 	Engine_Internal::Engine_Internal(): window(nullptr), thread() {}
 	Engine_Internal::~Engine_Internal() { thread.blockingStop(); }
@@ -40,7 +40,7 @@ namespace GEngine
 	void Engine_Internal::onStop()
 	{
 		thread.stop();
-		LOG(INFO) << "Tearing down Engine" << std::endl;
+		LOG(INFO) << "Tearing down Engine";
 
 		window.reset(nullptr);
 	}
@@ -55,4 +55,4 @@ namespace GEngine
 		thread.runLater([this]() { update(); });
 	}
 
-}	// namespace GEngine
+}	// namespace engine

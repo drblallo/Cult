@@ -6,14 +6,16 @@
 #include <thread>
 
 #include "Engine.hpp"
+#include "SoutSink.hpp"
 #include "TestUtils.hpp"
 
-using namespace GEngine;
+using namespace engine;
 
 class EngineTest: public testing::Test
 {
 	virtual void SetUp()
 	{
+		utils::initLogger(false);
 		Engine::start();
 		waitUntil([]() { return Engine::isRunning(); });
 	}

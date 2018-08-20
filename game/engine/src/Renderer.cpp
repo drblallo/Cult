@@ -7,7 +7,7 @@
 #include <cassert>
 #include <g3log/g3log.hpp>
 
-namespace GEngine
+namespace engine
 {
 	void Renderer::render() {}
 	void Renderer::addObject(std::unique_ptr<RenderObject>&& obj)
@@ -17,4 +17,4 @@ namespace GEngine
 		drawable.push_back(std::move(obj));
 	}
 
-}	// namespace GEngine
+}	// namespace engine

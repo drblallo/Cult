@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-namespace GEngine
+namespace engine
 {
 	Transform3D::Transform3D()
 			: translation(),
@@ -40,4 +40,4 @@ namespace GEngine
 		}
 		return cachedInvertedProjection;
 	}
-}	// namespace GEngine
+}	// namespace engine

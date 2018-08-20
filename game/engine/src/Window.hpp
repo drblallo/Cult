@@ -11,7 +11,7 @@
 
 struct GLFWwindow;
 
-namespace GEngine
+namespace engine
 {
 	class Window
 	{
@@ -34,6 +34,6 @@ namespace GEngine
 		static void staticKeyCallback(
 				GLFWwindow *window, int key, int scanCode, int action, int mods);
 	};
-}	// namespace GEngine
+}	// namespace engine
 
 #endif	// CULT_WINDOW_HPP

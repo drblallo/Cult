@@ -11,7 +11,7 @@
 #include <map>
 #include <memory>
 
-namespace Utils
+namespace utils
 {
 	template<typename T>
 	class TreeItem
@@ -131,6 +131,6 @@ namespace Utils
 		private:
 		std::unique_ptr<TreeItem<T>> root;
 	};
-}	// namespace Utils
+}	// namespace utils
 
 #endif	// CULT_TREE_HPP

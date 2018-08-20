@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <g3log/g3log.hpp>
 
-namespace GEngine
+namespace engine
 {
 	Window::Window(int xSize, int ySize, const std::string &name, Window *share)
 	{
@@ -21,7 +21,7 @@ namespace GEngine
 		glfwSetKeyCallback(window, Window::staticKeyCallback);
 		if (!window)
 		{
-			LOG(FATAL) << "Could not create Window" << std::endl;
+			LOG(FATAL) << "Could not create Window";
 			return;
 		}
 	}
@@ -30,7 +30,7 @@ namespace GEngine
 	{
 		if (window)
 		{
-			LOG(INFO) << "Closing Window" << std::endl;
+			LOG(INFO) << "Closing Window";
 			glfwDestroyWindow(window);
 		}
 	}
@@ -74,4 +74,4 @@ namespace GEngine
 			setShouldClose(true);
 	}
 
-}	// namespace GEngine
+}	// namespace engine

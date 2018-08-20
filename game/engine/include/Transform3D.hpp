@@ -10,7 +10,7 @@
 #include <glm/vec3.hpp>
 #include <vector>
 
-namespace GEngine
+namespace engine
 {
 	class Transform3D
 	{
@@ -98,6 +98,6 @@ namespace GEngine
 		glm::mat4 cachedInvertedProjection;
 		bool invertedProjectionDirty;
 	};
-}	// namespace GEngine
+}	// namespace engine
 
 #endif	// CULT_TRANSFORM3D_HPP

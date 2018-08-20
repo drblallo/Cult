@@ -9,7 +9,7 @@
 
 #include "RenderObject.hpp"
 
-namespace GEngine
+namespace engine
 {
 	class RenderObject;
 	class Renderer
@@ -23,6 +23,6 @@ namespace GEngine
 		void addObject(std::unique_ptr<RenderObject>&& obj);
 		std::vector<std::unique_ptr<RenderObject> > drawable;
 	};
-}	// namespace GEngine
+}	// namespace engine
 
 #endif	// CULT_RENDERER_HPP

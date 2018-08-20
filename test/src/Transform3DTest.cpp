@@ -6,7 +6,7 @@
 
 #include "Transform3D.hpp"
 
-using namespace GEngine;
+using namespace engine;
 class Transform3DTest: public testing::Test
 {
 	public:

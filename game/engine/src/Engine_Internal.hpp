@@ -9,7 +9,7 @@
 
 #include "ConsumerThread.hpp"
 
-namespace GEngine
+namespace engine
 {
 	class Window;
 	class Engine_Internal
@@ -30,6 +30,6 @@ namespace GEngine
 		void onStart();
 		void onStop();
 	};
-}	// namespace GEngine
+}	// namespace engine
 
 #endif	// CULT_ENGINE_INTERNAL_HPP

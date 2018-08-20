@@ -6,7 +6,7 @@
 #define CULT_RENDEROBJECT_HPP
 #include <Transform3D.hpp>
 
-namespace GEngine
+namespace engine
 {
 	class RenderObject
 	{
@@ -20,6 +20,6 @@ namespace GEngine
 		private:
 		Transform3D transform;
 	};
-}	// namespace GEngine
+}	// namespace engine
 
 #endif	// CULT_RENDEROBJECT_HPP
