@@ -13,6 +13,7 @@ struct GLFWwindow;
 
 namespace engine
 {
+	class RenderObject;
 	class Window
 	{
 		public:

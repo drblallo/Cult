@@ -35,7 +35,8 @@ namespace engine
 		}
 	}
 
-	Window::Window(Window &&other) noexcept: window(other.window)
+	Window::Window(Window &&other) noexcept
+			: window(other.window), renderer(std::move(other.renderer))
 	{
 		glfwSetKeyCallback(window, Window::staticKeyCallback);
 		other.window = nullptr;

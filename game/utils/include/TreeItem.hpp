@@ -18,10 +18,18 @@ namespace utils
 	{
 		public:
 		explicit TreeItem(const T& newData): parent(), children(), data(newData){};
+		explicit TreeItem(T&& newData)
+				: parent(), children(), data(std::move(newData)){};
 		TreeItem& operator=(const TreeItem<T>& other) = delete;
 		TreeItem(const TreeItem<T>& other)						= delete;
 
 		TreeItem<T>* getParent() const { return parent; }
+		TreeItem<T>* getRoot()
+		{
+			if (!getParent())
+				return this;
+			return getParent()->getRoot();
+		}
 
 		unsigned long getChildCount() const { return children.size(); }
 
@@ -105,6 +113,11 @@ namespace utils
 			return *ptr;
 		}
 
+		TreeItem<T>& addChild(T&& data)
+		{
+			return addChild(std::make_unique<TreeItem<T>>(std::move(data)));
+		}
+
 		TreeItem<T>& addChild(const T& data)
 		{
 			return addChild(std::make_unique<TreeItem<T>>(data));
@@ -125,7 +138,14 @@ namespace utils
 		{
 		}
 
-		TreeItem<T>& getRoot() const { return *root; }
+		explicit Tree(T&& rootData)
+				: root(std::make_unique<TreeItem<T>>(std::move(rootData)))
+		{
+		}
+		Tree(Tree<T>&& other): root(std::move(other.root)) {}
+
+		TreeItem<T>& getRoot() { return *root; }
+		const TreeItem<T>& getRoot() const { return *root; }
 		void setRoot(const T& data) { root.reset(new TreeItem<T>(data)); }
 
 		private:

@@ -8,7 +8,8 @@ int main(int, char**)
 {
 	utils::initLogger();
 	LOG(INFO) << "Starting Cult";
-	engine::Engine::blockingStart();
+	engine::Engine mainEngine;
+	mainEngine.blockingStart();
 
 	return 0;
 }

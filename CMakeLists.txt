@@ -51,7 +51,7 @@ add_subdirectory(glm)
 
 message("COMPILING CULT")
 ADD_EXECUTABLE(Cult main.cpp)
-TARGET_LINK_LIBRARIES(Cult PRIVATE g3logger engine)
+TARGET_LINK_LIBRARIES(Cult PRIVATE g3logger engine utils engine)
 TARGET_COMPILE_FEATURES(Cult PUBLIC cxx_std_14)
 
 compile_options(Cult)

@@ -13,30 +13,64 @@ using namespace engine;
 
 class EngineTest: public testing::Test
 {
+	public:
+	engine::Engine engine;
 	virtual void SetUp()
 	{
+		EXPECT_EQ(false, Engine::isInitialized());
 		utils::initLogger(false);
-		Engine::start();
-		waitUntil([]() { return Engine::isRunning(); });
+		engine.start();
+		waitUntil([this]() { return engine.isRunning(); });
+		waitUntil(
+				[]() { return Engine::isInitialized(); },
+				true,
+				100,
+				std::chrono::milliseconds(100));
 	}
 
 	virtual void TearDown()
 	{
-		Engine::stop();
-		waitUntil([]() { return Engine::isRunning(); }, false);
+		EXPECT_EQ(true, Engine::isInitialized());
+		engine.stop();
+		waitUntil([this]() { return engine.isRunning(); }, false);
+		waitUntil(
+				[]() { return Engine::isInitialized(); },
+				false,
+				100,
+				std::chrono::milliseconds(100));
 	}
 };
 
-TEST_F(EngineTest, engineShouldStart) { EXPECT_EQ(Engine::isRunning(), true); }
+TEST_F(EngineTest, engineShouldStart) { EXPECT_EQ(engine.isRunning(), true); }
 
 TEST_F(EngineTest, engineAndEnvironementShouldRestart)
 {
-	Engine::stop();
+	engine.stop();
 
-	waitUntil([]() { return Engine::isRunning(); }, false);
+	waitUntil([this]() { return engine.isRunning(); }, false);
 
-	Engine::terminate();
-	Engine::start();
+	engine.start();
 
-	waitUntil([]() { return Engine::isRunning(); });
+	waitUntil([this]() { return engine.isRunning(); });
+	waitUntil(
+			[]() { return Engine::isInitialized(); },
+			true,
+			100,
+			std::chrono::milliseconds(100));
+}
+
+TEST_F(EngineTest, canCreateMultipleEngines)
+{
+	engine::Engine engine2;
+	engine2.start();
+
+	waitUntil([this]() { return engine.isRunning(); });
+	engine::Engine otherEngine;
+	otherEngine.start();
+}
+
+TEST_F(EngineTest, engineGoingOutOfScopeShouldBeDestroyed)
+{
+	engine::Engine engine2;
+	engine2.start();
 }

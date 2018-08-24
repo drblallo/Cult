@@ -19,19 +19,35 @@ namespace engine
 	{
 	}
 
-	glm::mat4 Transform3D::getProjection()
+	Transform3D::Transform3D(std::function<Transform3D*()> parent)
+			: translation(),
+				rotation(),
+				scaling(1),
+				cachedProjection(1),
+				projectionDirty(false),
+				cachedInvertedProjection(1),
+				invertedProjectionDirty(false),
+				parentGetter(parent)
+
+	{
+	}
+	const glm::mat4& Transform3D::getProjection() const
 	{
 		if (projectionDirty)
 		{
 			cachedProjection = glm::translate(glm::mat4(1), translation);
 			cachedProjection = glm::scale(cachedProjection, scaling);
 			cachedProjection *= glm::mat4_cast(rotation);
+
+			if (parentGetter && parentGetter())
+				cachedProjection = parentGetter()->getProjection() * cachedProjection;
+
 			projectionDirty = false;
 		}
 		return cachedProjection;
 	}
 
-	glm::mat4 Transform3D::getInvertedProjection()
+	const glm::mat4& Transform3D::getInvertedProjection() const
 	{
 		if (invertedProjectionDirty)
 		{

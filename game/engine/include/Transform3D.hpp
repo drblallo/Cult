@@ -5,17 +5,24 @@
 #ifndef CULT_TRANSFORM3D_HPP
 #define CULT_TRANSFORM3D_HPP
 #define GLM_FORCE_RADIANS
+#include <functional>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <vector>
 
+namespace utils
+{
+	template<typename T>
+	class TreeItem;
+}
 namespace engine
 {
 	class Transform3D
 	{
 		public:
 		Transform3D();
+		Transform3D(std::function<Transform3D*()> parent);
 
 		inline void setTranslation(const glm::vec3& newTranslation)
 		{
@@ -80,8 +87,18 @@ namespace engine
 		inline const glm::vec3& getTranslation() const { return translation; }
 		inline const glm::vec3& getScale() const { return scaling; }
 		inline glm::vec3 getRotation() const { return glm::eulerAngles(rotation); }
-		glm::mat4 getProjection();
-		glm::mat4 getInvertedProjection();
+		const glm::mat4& getProjection() const;
+		const glm::mat4& getInvertedProjection() const;
+
+		void setParentGetter(const std::function<Transform3D*()>& getter)
+		{
+			parentGetter = getter;
+		}
+
+		void setParentGetter(std::function<Transform3D*()>&& getter)
+		{
+			parentGetter = getter;
+		}
 
 		private:
 		void markDirty()
@@ -93,10 +110,12 @@ namespace engine
 		glm::vec3 translation;
 		glm::quat rotation;
 		glm::vec3 scaling;
-		glm::mat4 cachedProjection;
-		bool projectionDirty;
-		glm::mat4 cachedInvertedProjection;
-		bool invertedProjectionDirty;
+		mutable glm::mat4 cachedProjection;
+		mutable bool projectionDirty;
+		mutable glm::mat4 cachedInvertedProjection;
+		mutable bool invertedProjectionDirty;
+
+		std::function<Transform3D*()> parentGetter;
 	};
 }	// namespace engine
 

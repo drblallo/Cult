@@ -5,9 +5,10 @@ TARGET_INCLUDE_DIRECTORIES(engine PRIVATE src/ PUBLIC include/)
 TARGET_COMPILE_FEATURES(engine PUBLIC cxx_std_14)
 TARGET_SOURCES(engine PRIVATE src/Engine.cpp)
 TARGET_SOURCES(engine PRIVATE src/Window.cpp)
-TARGET_SOURCES(engine PRIVATE src/Engine_Internal.cpp)
 TARGET_SOURCES(engine PRIVATE src/Renderer.cpp)
+TARGET_SOURCES(engine PRIVATE src/RenderObject.cpp)
 TARGET_SOURCES(engine PRIVATE src/Transform3D.cpp)
+TARGET_SOURCES(engine PRIVATE src/RenderObjectHandle.cpp)
 
 compile_options(engine)
 

@@ -7,16 +7,20 @@
 #include <GLFW/glfw3.h>
 #include <g3log/g3log.hpp>
 
-#include "Engine_Internal.hpp"
 #include "Window.hpp"
 
 namespace engine
 {
 	std::atomic<bool> initialized;
+	std::atomic<unsigned> openWindows;
 	std::mutex initLock;
-	Engine_Internal engine;
 
-	void Engine::init()
+	void logError(int, const char *description)
+	{
+		LOG(WARNING) << description << std::endl;
+	}
+
+	void init()
 	{
 		std::lock_guard<std::mutex> g(initLock);
 		if (initialized.load())
@@ -36,35 +40,63 @@ namespace engine
 		initialized.store(true);
 	}
 
-	void Engine::terminate()
+	void terminate()
 	{
 		std::lock_guard<std::mutex> g(initLock);
-		if (!initialized.load())
+		if (!initialized.load() || openWindows.load() != 0)
 			return;
 
 		initialized.store(false);
 		glfwTerminate();
 	}
 
+	Engine::Engine(): window(nullptr), thread() {}
+	Engine::~Engine() { thread.blockingStop(); }
+
+	bool Engine::isInitialized() { return initialized.load(); }
+
 	void Engine::start()
 	{
-		init();
-		engine.start();
+		thread.start([this]() { onStart(); }, [this] { onStop(); });
 	}
 
 	void Engine::blockingStart()
 	{
-		init();
-		engine.blockingStart();
+		thread.blockingStart([this]() { onStart(); }, [this] { onStop(); });
 	}
 
-	void Engine::stop() { engine.stop(); }
+	void Engine::stop() { thread.stop(); }
 
-	void Engine::logError(int, const char *description)
+	void Engine::update()
 	{
-		LOG(WARNING) << description << std::endl;
+		window->update();
+		glfwPollEvents();
+
+		if (window->shouldClose())
+			stop();
+		else
+			thread.runLater([this]() { update(); });
 	}
 
-	bool Engine::isRunning() { return engine.isRunning(); }
+	void Engine::onStop()
+	{
+		LOG(INFO) << "Tearing down Engine";
+
+		window.reset(nullptr);
+		openWindows--;
+		terminate();
+	}
+
+	void Engine::onStart()
+	{
+		openWindows++;
+		init();
+		window = std::make_unique<Window>(640, 480, "Main Window");
+
+		window->makeCurrentContext();
+		glfwSwapInterval(1);
+
+		thread.runLater([this]() { update(); });
+	}
 
 }	// namespace engine

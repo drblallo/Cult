@@ -16,15 +16,21 @@ namespace engine
 	class Engine
 	{
 		public:
-		static void start();
-		static void blockingStart();
-		static void stop();
-		static void terminate();
-		static bool isRunning();
+		Engine();
+		~Engine();
+		void start();
+		void blockingStart();
+		void stop();
+		bool isRunning() const { return thread.isRunning(); }
+		static bool isInitialized();
 
 		private:
-		static void init();
-		static void logError(int error, const char* description);
+		std::unique_ptr<Window> window;
+		utils::ConsumerThread thread;
+
+		void onStart();
+		void onStop();
+		void update();
 	};
 }	// namespace engine
 

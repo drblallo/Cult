@@ -10,11 +10,28 @@
 namespace engine
 {
 	void Renderer::render() {}
-	void Renderer::addObject(std::unique_ptr<RenderObject>&& obj)
+	RenderObjectHandle Renderer::add(std::unique_ptr<RenderObject>&& obj)
 	{
-		assert(std::find(drawable.begin(), drawable.end(), obj) == drawable.end());
+		assert(obj.get() != nullptr);
 		LOG(DEBUG) << "New render object added to renderer";
-		drawable.push_back(std::move(obj));
+		drawable.push_back(obj.get());
+		return RenderObjectHandle(&hierarchy.getRoot().addChild(std::move(obj)));
+	}
+
+	RenderObjectHandle Renderer::add(std::unique_ptr<RenderObject>& obj)
+	{
+		return add(std::move(obj));
+	}
+
+	std::unique_ptr<RenderObject> Renderer::remove(RenderObjectHandle handle)
+	{
+		assert(handle.get() != getRenderObjectRoot().get());
+		assert(hierarchy.getRoot().isAncestor(*handle.getItem()));
+
+		LOG(DEBUG) << "Render object removed from renderer";
+
+		auto item = handle.getItem()->removeFromParent();
+		return std::move(item->getData());
 	}
 
 }	// namespace engine
