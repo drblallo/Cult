@@ -22,8 +22,10 @@ namespace engine
 		}
 		RenderObject* get() const;
 		int getChildCount() const;
+		RenderObjectHandle getParent() const;
 		RenderObjectHandle getChild(int child) const;
 		void setParent(RenderObjectHandle handle);
+		RenderObject* operator->() const;
 
 		private:
 		utils::TreeItem<std::unique_ptr<RenderObject>>* getItem() const;

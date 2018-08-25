@@ -26,5 +26,12 @@ namespace engine
 		handle.getItem()->addChild(std::move(t));
 	}
 
+	RenderObjectHandle RenderObjectHandle::getParent() const
+	{
+		return RenderObjectHandle(getItem()->getParent());
+	}
+
 	RenderObject* RenderObjectHandle::get() const { return ogg->getData().get(); }
+
+	RenderObject* RenderObjectHandle::operator->() const { return get(); }
 }	// namespace engine

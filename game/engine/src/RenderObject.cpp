@@ -1,18 +1,17 @@
 #include "RenderObject.hpp"
 
 #include "Transform3D.hpp"
-#include "TreeItem.hpp"
 
 using namespace utils;
 namespace engine
 {
-	void RenderObject::setTreeItem(TreeItem<std::unique_ptr<RenderObject>>* item)
+	void RenderObject::setHandle(RenderObjectHandle item)
 	{
-		treeItem = item;
+		handle = item;
 		transform.setParentGetter([item]() -> Transform3D* {
-			if (!item || !item->getParent() || !item->getParent()->getData())
+			if (!item.get() || !item.getParent().get())
 				return nullptr;
-			return &item->getParent()->getData()->getTransform();
+			return &item.getParent()->getTransform();
 		});
 	}
 }	// namespace engine

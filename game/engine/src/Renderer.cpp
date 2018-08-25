@@ -15,7 +15,10 @@ namespace engine
 		assert(obj.get() != nullptr);
 		LOG(DEBUG) << "New render object added to renderer";
 		drawable.push_back(obj.get());
-		return RenderObjectHandle(&hierarchy.getRoot().addChild(std::move(obj)));
+
+		RenderObjectHandle handle(&hierarchy.getRoot().addChild(std::move(obj)));
+		handle->setHandle(handle);
+		return handle;
 	}
 
 	RenderObjectHandle Renderer::add(std::unique_ptr<RenderObject>& obj)
@@ -31,6 +34,7 @@ namespace engine
 		LOG(DEBUG) << "Render object removed from renderer";
 
 		auto item = handle.getItem()->removeFromParent();
+		item->getData()->setHandle(nullptr);
 		return std::move(item->getData());
 	}
 

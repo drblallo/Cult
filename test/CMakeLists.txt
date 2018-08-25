@@ -14,3 +14,4 @@ elseif()
 endif()
 
 message("END COMPILING TEST")
+TARGET_SOURCES(runTest PRIVATE src/RenderObjectTest)

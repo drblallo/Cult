@@ -7,11 +7,7 @@
 #include <Transform3D.hpp>
 #include <memory>
 
-namespace Utils
-{
-	template<typename T>
-	class TreeItem;
-}
+#include "RenderObjectHandle.hpp"
 
 namespace engine
 {
@@ -22,20 +18,17 @@ namespace engine
 
 		public:
 		virtual ~RenderObject() {}
-		RenderObject(): transform() {}
+		RenderObject(): transform(), handle(nullptr) {}
 		Transform3D& getTransform() { return transform; }
 
 		protected:
 		virtual void draw() {}
 
 		private:
-		utils::TreeItem<std::unique_ptr<RenderObject>>* getTreeItem() const
-		{
-			return treeItem;
-		}
-		void setTreeItem(utils::TreeItem<std::unique_ptr<RenderObject>>* item);
+		RenderObjectHandle getTreeItem() const { return handle; }
+		void setHandle(RenderObjectHandle item);
 		Transform3D transform;
-		utils::TreeItem<std::unique_ptr<RenderObject>>* treeItem;
+		RenderObjectHandle handle;
 	};
 }	// namespace engine
 

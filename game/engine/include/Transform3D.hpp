@@ -93,11 +93,12 @@ namespace engine
 		void setParentGetter(const std::function<Transform3D*()>& getter)
 		{
 			parentGetter = getter;
+			markDirty();
 		}
 
 		void setParentGetter(std::function<Transform3D*()>&& getter)
 		{
-			parentGetter = getter;
+			setParentGetter(getter);
 		}
 
 		private:

@@ -68,3 +68,31 @@ TEST_F(RendererTest, cannotSetParentFromOtherRenderer)
 	EXPECT_DEBUG_DEATH(h2.setParent(h), ".*");
 }
 #endif
+
+TEST_F(RendererTest, handleReturnsCorrectParent)
+{
+	RenderObjectHandle h(renderer->add(std::make_unique<RenderObject>()));
+
+	RenderObjectHandle h2(renderer->add(std::make_unique<RenderObject>()));
+
+	EXPECT_EQ(getRoot().get(), h.getParent().get());
+	EXPECT_EQ(getRoot().get(), h2.getParent().get());
+	h2.setParent(h);
+	EXPECT_EQ(h2.getParent().get(), h.get());
+}
+
+TEST_F(RendererTest, transformShouldBeMultipliedByParent)
+{
+	RenderObjectHandle h(renderer->add(std::make_unique<RenderObject>()));
+
+	RenderObjectHandle h2(renderer->add(std::make_unique<RenderObject>()));
+
+	h->getTransform().setScale(10, 1, 1);
+	h2.setParent(h);
+	glm::vec4 v(1, 1, 1, 1);
+
+	v = h2->getTransform().getProjection() * v;
+	EXPECT_EQ(v.x, 10);
+	EXPECT_EQ(v.y, 1);
+	EXPECT_EQ(v.z, 1);
+}
