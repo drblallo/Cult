@@ -10,6 +10,7 @@
 namespace engine
 {
 	Window::Window(int xSize, int ySize, const std::string &name, Window *share)
+			: renderer(xSize, ySize)
 	{
 		GLFWwindow *shrWindow(nullptr);
 		if (share)
@@ -19,6 +20,7 @@ namespace engine
 
 		glfwSetWindowUserPointer(window, this);
 		glfwSetKeyCallback(window, Window::staticKeyCallback);
+		glfwSetWindowSizeCallback(window, Window::staticSizeCallback);
 		if (!window)
 		{
 			LOG(FATAL) << "Could not create Window";
@@ -64,6 +66,13 @@ namespace engine
 			w->keyCallback(key, scanCode, action, mods);
 	}
 
+	void Window::staticSizeCallback(GLFWwindow *window, int width, int height)
+	{
+		Window *w = static_cast<Window *>(glfwGetWindowUserPointer(window));
+		if (w)
+			w->setSize(width, height);
+	}
+
 	void Window::setShouldClose(bool shouldClose)
 	{
 		glfwSetWindowShouldClose(window, shouldClose);
@@ -73,6 +82,13 @@ namespace engine
 	{
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 			setShouldClose(true);
+	}
+
+	void Window::setSize(int width, int height)
+	{
+		LOG(DEBUG) << "resizing window";
+		renderer.getCamera().setWidth(width);
+		renderer.getCamera().setHeight(height);
 	}
 
 }	// namespace engine

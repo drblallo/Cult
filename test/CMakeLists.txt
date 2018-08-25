@@ -15,3 +15,4 @@ endif()
 
 message("END COMPILING TEST")
 TARGET_SOURCES(runTest PRIVATE src/RenderObjectTest)
+TARGET_SOURCES(runTest PRIVATE src/CameraTest)

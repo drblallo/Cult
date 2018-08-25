@@ -7,6 +7,7 @@
 
 #include <list>
 
+#include "Camera.hpp"
 #include "RenderObject.hpp"
 #include "RenderObjectHandle.hpp"
 #include "TreeItem.hpp"
@@ -17,9 +18,13 @@ namespace engine
 	class Renderer
 	{
 		public:
-		Renderer(): hierarchy(std::make_unique<RenderObject>()) {}
+		Renderer(int width, int height)
+				: camera(width, height), hierarchy(std::make_unique<RenderObject>())
+		{
+		}
 		Renderer(Renderer&& other)
-				: drawable(std::move(other.drawable)),
+				: camera(other.camera),
+					drawable(std::move(other.drawable)),
 					hierarchy(std::move(other.hierarchy))
 		{
 		}
@@ -35,7 +40,10 @@ namespace engine
 			return RenderObjectHandle(&hierarchy.getRoot());
 		}
 
+		Camera& getCamera() { return camera; }
+
 		private:
+		Camera camera;
 		std::list<RenderObject*> drawable;
 		utils::Tree<std::unique_ptr<RenderObject>> hierarchy;
 	};

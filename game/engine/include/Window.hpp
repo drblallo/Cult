@@ -32,8 +32,10 @@ namespace engine
 		GLFWwindow *window;
 		Renderer renderer;
 		void keyCallback(int key, int scanCode, int action, int mods);
+		void setSize(int width, int heigt);
 		static void staticKeyCallback(
 				GLFWwindow *window, int key, int scanCode, int action, int mods);
+		static void staticSizeCallback(GLFWwindow *window, int width, int height);
 	};
 }	// namespace engine
 

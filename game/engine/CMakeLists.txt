@@ -9,6 +9,7 @@ TARGET_SOURCES(engine PRIVATE src/Renderer.cpp)
 TARGET_SOURCES(engine PRIVATE src/RenderObject.cpp)
 TARGET_SOURCES(engine PRIVATE src/Transform3D.cpp)
 TARGET_SOURCES(engine PRIVATE src/RenderObjectHandle.cpp)
+TARGET_SOURCES(engine PRIVATE src/Camera.cpp)
 
 compile_options(engine)
 

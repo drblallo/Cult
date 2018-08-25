@@ -12,7 +12,7 @@ class RendererTest: public testing::Test
 	virtual void SetUp()
 	{
 		utils::initLogger(false);
-		renderer.reset(new Renderer());
+		renderer.reset(new Renderer(100, 100));
 	}
 	virtual void TearDown() {}
 };
@@ -60,7 +60,7 @@ TEST_F(RendererTest, rendererCanBeMoved)
 #ifdef CULT_DEATH_TEST
 TEST_F(RendererTest, cannotSetParentFromOtherRenderer)
 {
-	Renderer r;
+	Renderer r(100, 100);
 	RenderObjectHandle h(r.add(std::make_unique<RenderObject>()));
 
 	RenderObjectHandle h2(renderer->add(std::make_unique<RenderObject>()));
