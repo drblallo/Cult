@@ -42,6 +42,7 @@ include(compile_options.cmake)
 
 project(Cult)
 
+add_subdirectory(glad)
 add_subdirectory(googletest)
 add_subdirectory(test)
 add_subdirectory(game)

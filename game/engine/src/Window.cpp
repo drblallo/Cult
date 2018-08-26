@@ -4,8 +4,11 @@
 
 #include "Window.hpp"
 
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <g3log/g3log.hpp>
+
+#include "glad/glad.h"
 
 namespace engine
 {
@@ -18,12 +21,23 @@ namespace engine
 
 		window = glfwCreateWindow(xSize, ySize, name.c_str(), nullptr, shrWindow);
 
+		glfwMakeContextCurrent(window);
 		glfwSetWindowUserPointer(window, this);
 		glfwSetKeyCallback(window, Window::staticKeyCallback);
 		glfwSetWindowSizeCallback(window, Window::staticSizeCallback);
 		if (!window)
 		{
 			LOG(FATAL) << "Could not create Window";
+			return;
+		}
+		// if (!gladLoadGL())
+		//{
+		// LOG(FATAL) << "Could load load opengl";
+		// return;
+		//}
+		if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+		{
+			LOG(FATAL) << "Could not load opengl";
 			return;
 		}
 	}

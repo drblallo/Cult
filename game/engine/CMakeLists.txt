@@ -1,6 +1,7 @@
 message("COMPILING ENGINE")
+
 ADD_LIBRARY(engine STATIC)
-TARGET_LINK_LIBRARIES(engine PRIVATE glfw g3logger PUBLIC utils glm)
+TARGET_LINK_LIBRARIES(engine PRIVATE glfw g3logger glad PUBLIC utils glm)
 TARGET_INCLUDE_DIRECTORIES(engine PRIVATE src/ PUBLIC include/)
 TARGET_COMPILE_FEATURES(engine PUBLIC cxx_std_14)
 TARGET_SOURCES(engine PRIVATE src/Engine.cpp)
@@ -10,7 +11,9 @@ TARGET_SOURCES(engine PRIVATE src/RenderObject.cpp)
 TARGET_SOURCES(engine PRIVATE src/Transform3D.cpp)
 TARGET_SOURCES(engine PRIVATE src/RenderObjectHandle.cpp)
 TARGET_SOURCES(engine PRIVATE src/Camera.cpp)
+TARGET_SOURCES(engine PRIVATE src/Shader.cpp)
 
 compile_options(engine)
 
 message("END COMPILING ENGINE")
+TARGET_SOURCES(engine PRIVATE src/TextFileDatabase)

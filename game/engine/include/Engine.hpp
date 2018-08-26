@@ -23,6 +23,7 @@ namespace engine
 		void stop();
 		bool isRunning() const { return thread.isRunning(); }
 		static bool isInitialized();
+		void runLater(std::function<void()> function);
 
 		private:
 		std::unique_ptr<Window> window;

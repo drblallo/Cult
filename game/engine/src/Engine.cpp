@@ -4,8 +4,10 @@
 
 #include "Engine.hpp"
 
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <g3log/g3log.hpp>
+//#include <glad/glad.h>
 
 #include "Window.hpp"
 
@@ -30,13 +32,13 @@ namespace engine
 
 		if (!glfwInit())
 		{
-			LOG(FATAL) << "Could not start Engine" << std::endl;
+			LOG(FATAL) << "Could not start Engine";
 			return;
 		}
 
 		glfwSetErrorCallback(logError);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 		initialized.store(true);
 	}
 
@@ -57,12 +59,17 @@ namespace engine
 
 	void Engine::start()
 	{
-		thread.start([this]() { onStart(); }, [this] { onStop(); });
+		thread.start([this] { onStart(); }, [this] { onStop(); });
+	}
+
+	void Engine::runLater(std::function<void()> function)
+	{
+		thread.runLater(function);
 	}
 
 	void Engine::blockingStart()
 	{
-		thread.blockingStart([this]() { onStart(); }, [this] { onStop(); });
+		thread.blockingStart([this] { onStart(); }, [this] { onStop(); });
 	}
 
 	void Engine::stop() { thread.stop(); }
