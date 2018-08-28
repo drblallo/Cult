@@ -4,7 +4,7 @@
 
 namespace engine
 {
-	Shader::Shader(const std::string& program, GLenum shaderType)
+	Shader::Shader(const std::string& program, GLenum sType): shaderType(sType)
 	{
 		shaderID = glCreateShader(shaderType);
 		const char* c(program.c_str());

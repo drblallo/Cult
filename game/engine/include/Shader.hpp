@@ -8,6 +8,8 @@ namespace engine
 {
 	class Shader
 	{
+		friend class Program;
+
 		public:
 		Shader(const std::string& program, GLenum shaderTyoe);
 		~Shader();
@@ -15,11 +17,13 @@ namespace engine
 		Shader(Shader&& other) noexcept;
 		Shader& operator=(const Shader& other);
 		bool good() const { return shaderID; }
+		GLenum getShaderType() const { return shaderType; }
 		// methods
 
 		private:
 		// members
 		GLuint shaderID;
+		GLenum shaderType;
 
 		// helpers
 	};

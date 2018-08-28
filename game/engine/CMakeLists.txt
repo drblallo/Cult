@@ -17,3 +17,4 @@ compile_options(engine)
 
 message("END COMPILING ENGINE")
 TARGET_SOURCES(engine PRIVATE src/TextFileDatabase)
+TARGET_SOURCES(engine PRIVATE src/Program)
