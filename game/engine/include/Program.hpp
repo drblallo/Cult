@@ -1,6 +1,7 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
-#include "ProgramUniform.hpp"
+#include <glm/glm.hpp>
+
 #include "Shader.hpp"
 
 namespace engine

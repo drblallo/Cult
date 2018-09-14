@@ -16,9 +16,16 @@ namespace engine
 		{
 		}
 
+		ProgramUniform(ProgramUniform&& other)
+				: data(other.data), location(other.location)
+		{
+			other.location = -1;
+		}
+
 		void setData(T newData) { data = newData; }
 
 		private:
+		void bind();
 		T data;
 		GLint location;
 	};
